@@ -35,15 +35,16 @@ def scanHex(wid):
 
     dictionary = readDictionary(conf['dictfile'])
 
-    hex = buildAddr()
-    logging.info(f"READER #{wid} - Scanning hex #{shorthex(hex)}")
-    for wall in range(1, 4):
-        for shelf in range(1, 5):
-            for volume in range(1, 32):
-                book = pybel.browse(hex, str(wall), str(shelf), str(volume)).replace("\n", "")
-                #book = testbook()  # NOTE: Only uncomment this line when testing!
-                logging.info(f"READER #{wid} - Book downloaded. Reading...")
-                analyze(book, hex, str(wall), str(shelf), str(volume), db, dictionary, wid)
+    while True:
+        hex = buildAddr()
+        logging.info(f"READER #{wid} - Scanning hex #{shorthex(hex)}")
+        for wall in range(1, 4):
+            for shelf in range(1, 5):
+                for volume in range(1, 32):
+                    book = pybel.browse(hex, str(wall), str(shelf), str(volume)).replace("\n", "")
+                    #book = testbook()  # NOTE: Only uncomment this line when testing!
+                    logging.info(f"READER #{wid} - Book downloaded. Reading...")
+                    analyze(book, hex, str(wall), str(shelf), str(volume), db, dictionary, wid)
     db.close()
     return
 
