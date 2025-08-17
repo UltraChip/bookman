@@ -1,0 +1,4 @@
+__pychache__/*
+*.db
+*.log
+*.code-workspace
