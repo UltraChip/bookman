@@ -51,7 +51,7 @@ Below is an explanation of each of the config file options:
 In addition to scrolling log output on the screen (and also bookman.log), BookMan writes its findings to an SQLite3 database. Unfortunately, right now the only way to access the contents of that database is to open it up manually using sqlite's command line utility. I'm working on a proper tool for perusing the database but I haven't written it yet. 
 
 The database contains two tables:
-- stats, which contains a single row of data storing the total number of books read along with your computer's average reading speed (in minutes-per-book).
+- stats, which contains a single row of data storing the total number of books read along with your computer's average reading speed (in seconds-per-book).
 - passages, which contains BookMan's actual findings. This includes the exact address of the book in question, the page number the passage was found on, the contents of the passage, its Word Count score, and a boolean flag showing whether or not the LLM confirmed the finding.
 
 ## Special Credits

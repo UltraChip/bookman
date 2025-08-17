@@ -92,7 +92,7 @@ def analyze(book, hex, wall, shelf, volume, db, dictionary, wid):
         else:
             i += 1
 
-    readTime = (time.time()-startTime)/60  # Calculates reading time in minutes
+    readTime = (time.time()-startTime)  # Calculates reading time in seconds
     cursor.execute("SELECT books, readSpeed FROM stats WHERE sid = 1;")
     result = cursor.fetchone()
     booksRead = int(result[0])
