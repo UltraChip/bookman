@@ -12,6 +12,7 @@ Automatically reads books from Jonathan Basile's online implementation of Jorge 
 ## Dependencies
 - Access to a working Ollama server: You can use pretty much any language model you want, but it must be running on an Ollama server which you have API access to. I recommend you use a locally-hosted server for optimal performance.
 - Ollama Python module: Can be installed via PIP or whatever your favorite package manager is.
+- PrettyTable Python module: Can be installed via PIP or whatever your favorite package manager is.
 - SQLite3
 - Soft Requirement: a *nix operating system. By default, BookMan leverages /usr/share/dict/words as its reference dictionary. If you want to run this program on Windows then you'll need to download your own word list and point to it in the config file.
 
@@ -27,6 +28,8 @@ Below is an explanation of each of the config file options:
 - loglevel : The level of verbosity for the program log. Right now, INFO is the only level supported.
 
 - logfile : The location and name of the log file (default bookman.log).
+
+- reportlog : The location and name of BookReport's log file (default bookreport.log).
 
 - dbfile : The location and name of the SQLite database file (default bookman.db).
 
