@@ -39,8 +39,11 @@ def browse(hexagon,wall,shelf,volume):
     form = {"hex":hexagon,"wall":wall,"shelf":shelf,"volume":volume,"page":"1","title":"startofthetext"}
     url = "https://libraryofbabel.info/download.cgi"
     text = requests.post(url,data=form)
-    # Cleaning the raw text, so "content" turns into the pure book
-    content = text.text[len("startofthetext")+ 2::].rsplit('\n', 4)[0]
+    if text.status_code == 200:
+        # Cleaning the raw text, so "content" turns into the pure book
+        content = text.text[len("startofthetext")+ 2::].rsplit('\n', 4)[0]
+    else:
+        raise requests.exceptions.HTTPError
     return content
 
 class SearchResult:
