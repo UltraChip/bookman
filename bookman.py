@@ -27,7 +27,7 @@ confFile = "./bookman.conf"
 
 
 # FUNCTIONS
-def scanHex(wid):
+def scanHex(wid, hbeats):
     # Select a hex address at random and iterate over each book in that hex, scanning each one for
     # evidence of language.
     db = sqlite3.connect(conf['dbfile'])
@@ -41,11 +41,19 @@ def scanHex(wid):
         for wall in range(1, 4):
             for shelf in range(1, 5):
                 for volume in range(1, 32):
-                    book = pybel.browse(hex, str(wall), str(shelf), str(volume)).replace("\n", "")
-                    #book = testbook()  # NOTE: Only uncomment this line when testing!
-                    logging.info(f"READER #{wid} - Book downloaded. Reading...")
-                    analyze(book, hex, str(wall), str(shelf), str(volume), db, dictionary, wid)
-    db.close()
+                    tryAgain = True
+                    while tryAgain:
+                        try:
+                            book = pybel.browse(hex, str(wall), str(shelf), str(volume)).replace("\n", "")
+                            #book = testbook()  # NOTE: Only uncomment this line when testing!
+                            logging.debug(f"READER #{wid} - Book downloaded. Reading...")
+                            tryAgain = False
+                        except:
+                            s = random.randint(1, 10)
+                            logging.error(f"Reader {wid} failed to download book! Retrying in {s} seconds...")
+                            time.sleep(s)
+                    analyze(book, hex, str(wall), str(shelf), str(volume), db, dictionary)
+                    hbeats[wid] = time.time()
     return
 
 def buildAddr():
@@ -57,7 +65,7 @@ def buildAddr():
         chars.append(random.choice(alphabet))
     return ''.join(chars)
 
-def analyze(book, hex, wall, shelf, volume, db, dictionary, wid):
+def analyze(book, hex, wall, shelf, volume, db, dictionary):
     # Analyze the content of a book in conf['seglength'] sized chunks. First counts the number of
     # consecutive English words in a given segment and, if it surpasses the minimum wordcount,
     # hands the segment off to an LLM for final verification.
@@ -109,14 +117,17 @@ def wCount(segment, dictionary):
     score    = 0
     curCount = 0
     splitSeg = re.split(r'\s*,\s*|\s*\.\s*|\s+', segment)
+    lastWord = ""
 
     for word in splitSeg:
-        if word.strip() in dictionary:
-            curCount += 1
+        if word.strip() in dictionary and word.strip() != lastWord:  # Tracking the last word helps
+            lastWord = word.strip()                                  # prevent sequences of
+            curCount += 1                                            # repeating words like a a a a
             if curCount > score:
                 score = curCount
         else:
             curCount = 0
+            lastWord = ""
     return score
 
 def llmCheck(segment):
@@ -208,15 +219,26 @@ logging.info("INIT - Logger")
 
 initDB(conf['dbfile'])
 
+manager = mp.Manager()
 workers = []
+hbeats  = manager.dict()
 cCount = os.cpu_count() if conf['cCount'] == 0 else conf['cCount']
 mp.get_context("spawn")
 for w in range(cCount):
-    worker = mp.Process(target=scanHex, args=(w,))
+    worker = mp.Process(target=scanHex, args=(w, hbeats))
     workers.append(worker)
     worker.start()
     logging.info(f"INIT - Kicked off reader #{w}")
-
 logging.info("INIT - All readers online, initialization complete")
-while True:
-    time.sleep(1)  # Just have the main thread idle while the worker threads do their thing.
+
+while True:    # Watchdog restarts the reader threads if they happen to stall out.
+    ctime = time.time()
+    for wid, btime in hbeats.items():
+        if ctime - btime > conf['timeout']:
+            logging.error(f"WATCHDOG - Reader #{wid} hasn't responded in {conf['timeout']} seconds, so we're restarting it...")
+            workers[wid].kill()
+            workers[wid].join()
+            worker = mp.Process(target=scanHex, args=(wid, hbeats))
+            workers.append(worker)
+            worker.start
+    time.sleep(1)

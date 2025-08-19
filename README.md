@@ -43,6 +43,8 @@ Below is an explanation of each of the config file options:
 
 - cCount : The total number of processing threads to use (in other words, how many books the program will try to read simultaneously). Set to 0 to have BookMan auto-detect the thread count based on how many logical CPUs your computer has. Default is 0. 
 
+- timeout : Specifies the time (in seconds) the watchdog process will wait to hear from a reader thread before assuming its stalled out and forcibly terminating/restarting it. Default 60 seconds.
+
 - llmHost : The address and port number of your Ollama server. Default is localhost:11434.
 
 - llmModel : The language model you wish to use to assess candidate text segments. Default is gemma2 just because it's my personal favorite, but you'll need to set it to whatever model you have/prefer.
