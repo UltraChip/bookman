@@ -51,6 +51,8 @@ Below is an explanation of each of the config file options:
 
 - llmPrompt : The prompt that's fed to the language model (along with the candidate text segment) to explain to the model what it's being asked to do. I recommend you don't mess with this unless you're very comfortable with prompt engineering.
 
+- viewmode : The default viewing mode for the Book Report utility. 1 means view is LLM-verified entries only, while 0 means view all entries. Default is 1.
+
 
 ## How to View the Results
 In addition to scrolling log output on the screen (and also bookman.log), BookMan writes its findings to an SQLite3 database. Unfortunately, right now the only way to access the contents of that database is to open it up manually using sqlite's command line utility. I'm working on a proper tool for perusing the database but I haven't written it yet. 

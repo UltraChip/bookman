@@ -7,6 +7,8 @@
 # IMPORTS AND CONSTANTS
 import sqlite3
 import logging
+import time
+import math
 from prettytable import PrettyTable as pt
 from shutil import get_terminal_size
 
@@ -17,27 +19,49 @@ confFile = "./bookman.conf"
 
 # FUNCTIONS
 
-def main():
+def main(viewMode):
     # Main menu function
-    stats, passages = loadDB(conf['dbfile'])
-    swidth = getWidth()
+    stats, passages, loadtime = loadDB(conf['dbfile'])
+    vString = "LLM Only" if viewMode == 1 else "All Entries"
 
     clearScreen()
-    print(colSpacer(["BOOKMAN REPORTING UTILITY"], swidth, "="))
+    print(colSpacer(["BOOKMAN REPORTING UTILITY"], "="))
+    line = [f"View Mode: {vString}",
+            f"DB Loaded On: {time.strftime("%d %b %Y at %H:%M%S", time.localtime(loadtime))}"]
+    print(colSpacer(line))
+    line = [f"Books Read: {stats[0]:,}",
+            f"Avg Speed: {stats[1]:.2f} seconds per book"]
+    print(colSpacer(line))
+    print(f"{div()}\n")
+    tHeaders = ["Index", "Time Found", "Address", "Page", "Content", "Score"]
+    if viewMode == 0:
+        tHeaders.append("LLM")
+    table = pt(tHeaders)
+    for p in passages:
+        tEntry = [p[0], p[1], p[2], p[3], p[4], p[5]]
+        if viewMode == 1:
+            tEntry.append(p[6])
+        table.add_row(tEntry)
+    print(table)
+    print(f"{div()}\n")
+    
     return
 
 def clearScreen():
     # Self explanatory
     print("\033c")
 
-def colSpacer(options, swidth, pad=" "):
+def div(pad="="):
+    return pad*swidth+"\n"
+
+def colSpacer(options, pad=" "):
     # Evenly spaces strings along the column width of the screen. Useful for
     # cleanly printing menu options.
     fString = ""
     num_options = len(options)
     if num_options == 1:
         return options[0]
-    spacePerCol = int(floor((swidth - len(options[-1])) / (num_options - 1)))
+    spacePerCol = int(math.floor((swidth - len(options[-1])) / (num_options - 1)))
     for i, option in enumerate(options):
         if i == len(options)-1:
             break
@@ -68,7 +92,7 @@ def loadDB(filename):
     for row in rawP:
         addr = buildAddr(row[2], row[3], row[4], row[5])
         passages.append([row[0], row[1], addr, row[6], row[7], row[8], row[9]])
-    return stats, passages
+    return stats, passages, time.time()
 
 def buildAddr(hex, wall, shelf, volume):
     # Concatenates the various elements of a Babel book address in to a single, readable string.
@@ -86,7 +110,9 @@ def getWidth():
 
 
 # INITIALIZATION
-conf = loadConfig(confFile)
+conf     = loadConfig(confFile)
+swidth   = getWidth()
+viewMode = conf['viewmode']
 
 logging.basicConfig(
     level=conf['loglevel'],
@@ -94,4 +120,4 @@ logging.basicConfig(
     handlers=[
         logging.FileHandler(conf['reportlog'], mode='a')])
 
-main()
+main(viewMode)
