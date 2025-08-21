@@ -240,5 +240,5 @@ while True:    # Watchdog restarts the reader threads if they happen to stall ou
             workers[wid].join()
             worker = mp.Process(target=scanHex, args=(wid, hbeats))
             workers.append(worker)
-            worker.start
+            worker.start()
     time.sleep(1)
