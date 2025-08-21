@@ -232,6 +232,7 @@ for w in range(cCount):
 logging.info("INIT - All readers online, initialization complete")
 
 while True:    # Watchdog restarts the reader threads if they happen to stall out.
+    newBeats = {}
     ctime = time.time()
     for wid, btime in hbeats.items():
         if ctime - btime > conf['timeout']:
@@ -241,4 +242,7 @@ while True:    # Watchdog restarts the reader threads if they happen to stall ou
             worker = mp.Process(target=scanHex, args=(wid, hbeats))
             workers.append(worker)
             worker.start()
+        else:
+            newBeats[wid] = btime
+    hbeats = newBeats
     time.sleep(1)
