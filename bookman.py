@@ -81,7 +81,7 @@ def analyze(book, hex, wall, shelf, volume, db, dictionary):
         
         wc = wCount(segment, dictionary)
         if wc >= conf['wordCount']:
-            tstamp = time.strftime("%Y%m%d-%H%M%S",time.gmtime())
+            tstamp = time.time()
             llm = llmCheck(segment)
             cursor.execute("""INSERT INTO passages (tstamp, hex, wall, shelf, volume, page,
                             content, nScore, llm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);""", 
@@ -90,9 +90,9 @@ def analyze(book, hex, wall, shelf, volume, db, dictionary):
             i += conf['seglength']
             if llm == 0:
                 a=0
-                #logging.info(f"FOUND - Segment passed word count check but NO LLM confirmation")
-                #logging.info(f"{shorthex(hex)}-{wall}-{shelf}-{volume}, page {page}:")
-                #logging.info(segment)
+                logging.debug(f"FOUND - Segment passed word count check but NO LLM confirmation")
+                logging.debug(f"{shorthex(hex)}-{wall}-{shelf}-{volume}, page {page}:")
+                logging.debug(segment)
             else:
                 logging.info(f"FOUND - Segment passed ALL checks!!!")
                 logging.info(f"{shorthex(hex)}-{wall}-{shelf}-{volume}, page {page}:")

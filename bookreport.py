@@ -6,7 +6,6 @@
 
 # IMPORTS AND CONSTANTS
 import sqlite3
-import logging
 import time
 import math
 from prettytable import PrettyTable as pt
@@ -21,30 +20,81 @@ confFile = "./bookman.conf"
 
 def main(viewMode):
     # Main menu function
-    stats, passages, loadtime = loadDB(conf['dbfile'])
-    vString = "LLM Only" if viewMode == 1 else "All Entries"
+    while True:
+        choice = "NOCHOICE"
+        stats, passages, loadtime = loadDB()
+        vString = "LLM Only" if viewMode == 1 else "All Entries"
 
-    clearScreen()
-    print(colSpacer(["BOOKMAN REPORTING UTILITY"], "="))
-    line = [f"View Mode: {vString}",
-            f"DB Loaded On: {time.strftime("%d %b %Y at %H:%M%S", time.localtime(loadtime))}"]
-    print(colSpacer(line))
-    line = [f"Books Read: {stats[0]:,}",
-            f"Avg Speed: {stats[1]:.2f} seconds per book"]
-    print(colSpacer(line))
-    print(f"{div()}\n")
-    tHeaders = ["Index", "Time Found", "Address", "Page", "Content", "Score"]
-    if viewMode == 0:
-        tHeaders.append("LLM")
-    table = pt(tHeaders)
-    for p in passages:
-        tEntry = [p[0], p[1], p[2], p[3], p[4], p[5]]
-        if viewMode == 1:
-            tEntry.append(p[6])
-        table.add_row(tEntry)
-    print(table)
-    print(f"{div()}\n")
-    
+        clearScreen()
+        print(colSpacer(["BOOKMAN REPORTING UTILITY"], "="))
+        line = [f"View Mode: {vString}",
+                f"DB Loaded On: {time.strftime("%d %b %Y at %H:%M%S", time.localtime(loadtime))}"]
+        print(colSpacer(line))
+        line = [f"Books Read: {stats[0]:,}",
+                f"Avg Speed: {stats[1]:.2f} seconds per book"]
+        print(colSpacer(line))
+        print(f"{div()}\n")
+        tHeaders = ["Index", "Time Found", "Address", "Page", "Content", "Score"]
+        if viewMode == 0:
+            tHeaders.append("LLM")
+        table = pt(tHeaders)
+        for p in passages:
+            tEntry = [p[0], p[1], p[2], p[3], p[4], p[5]]
+            if viewMode == 1:
+                tEntry.append(p[6])
+            table.add_row(tEntry)
+        print(table)
+        print(f"{div()}\n")
+        line = ["M - Toggle View Mode",
+                "D - Delete Entry",
+                "Q - Quit"]
+        print("Enter index # to view get URL or...")
+        print(colSpacer(line))
+
+        choice = input("\nYour selection: ")
+        if choice.upper() == "M":
+            viewMode = 1 if viewMode == 0 else 0
+        elif choice.upper() == "D":
+            deleteEntry()
+        elif choice.upper() == "Q":
+            return
+        else:
+            try:
+                nchoice = int(choice)
+            except:
+                pass
+            getURL(nchoice)
+
+def getURL(pid):
+    # Gives you a browsable link to a given Library of Babel book.
+    db = sqlite3.connect(conf['dbfile'])
+    cursor = db.cursor()
+    cursor.execute("SELECT hex, wall, shelf, volume, page FROM passages WHERE pid == n;", (pid,))
+    result = cursor.fetchone()
+    db.close()
+
+    qString = f"{result[0]}-w{result[1]}-s{result[2]}-v{result[3]}:{result[4]}"
+    link = f"https://libraryofbabel.info/book.cgi?{qString}"
+
+    print(link)
+    a = input("\n\nPress Enter to go back to main menu")
+    return
+
+def deleteEntry():
+    # Deletes an entry from the database.
+    try:
+        choice = int(input("\nEnter the index number you want to delete: "))
+    except:
+        print("Invalid number!")
+        time.sleep(3)
+        return
+    yesno = input(f"\nOk, we're about to delete entry #{choice}, are you ABSOLUTELY sure (y/N)?").upper()
+    if yesno == "Y" or yesno == "YES":
+        db = sqlite3.connect(conf['dbfile'])
+        cursor = db.cursor()
+        cursor.execute("DELETE FROM passages WHERE pid==?;", (choice,))
+        db.commit()
+        db.close()
     return
 
 def clearScreen():
@@ -80,10 +130,10 @@ def shorthex(hex):
     lastC  = hex[-10:]
     return f"{firstC}...{lastC}"
 
-def loadDB(filename):
+def loadDB():
     # Loads in the contents of the database.
     passages = []
-    db = sqlite3.connect(filename)
+    db = sqlite3.connect(conf['dbfile'])
     cursor = db.cursor()
     cursor.execute("SELECT books, readSpeed FROM stats WHERE sid == 1;")
     stats = cursor.fetchone()
@@ -112,12 +162,5 @@ def getWidth():
 # INITIALIZATION
 conf     = loadConfig(confFile)
 swidth   = getWidth()
-viewMode = conf['viewmode']
 
-logging.basicConfig(
-    level=conf['loglevel'],
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler(conf['reportlog'], mode='a')])
-
-main(viewMode)
+main(conf['viewmode'])
