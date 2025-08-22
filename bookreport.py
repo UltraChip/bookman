@@ -28,7 +28,7 @@ def main(viewMode):
         clearScreen()
         print(colSpacer(["","BOOKMAN REPORTING UTILITY",""], "="))
         line = [f"View Mode: {vString}",
-                f"DB Loaded On: {time.strftime("%d %b %Y at %H:%M:%S", time.localtime(loadtime))}"]
+                f"DB Loaded On: {time.strftime('%d %b %Y at %H:%M:%S', time.localtime(loadtime))}"]
         print(colSpacer(line))
         line = [f"Books Read: {stats[0]:,}",
                 f"Avg Speed: {stats[1]:.2f} seconds per book"]
