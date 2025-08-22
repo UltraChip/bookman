@@ -40,9 +40,12 @@ def main(viewMode):
         table = pt(tHeaders)
         for p in passages:
             tEntry = [p[0], p[1], p[2], p[3], p[4], p[5]]
-            if viewMode == 1:
+            if viewMode == 0:
                 tEntry.append(p[6])
-            table.add_row(tEntry)
+                table.add_row(tEntry)
+            else:
+                if p[6] == 1:
+                    table.add_row(tEntry)
         print(table)
         print(f"{div()}\n")
         line = ["M - Toggle View Mode",
@@ -69,7 +72,7 @@ def getURL(pid):
     # Gives you a browsable link to a given Library of Babel book.
     db = sqlite3.connect(conf['dbfile'])
     cursor = db.cursor()
-    cursor.execute("SELECT hex, wall, shelf, volume, page FROM passages WHERE pid == n;", (pid,))
+    cursor.execute("SELECT hex, wall, shelf, volume, page FROM passages WHERE pid == ?;", (pid,))
     result = cursor.fetchone()
     db.close()
 
@@ -141,6 +144,7 @@ def loadDB():
     rawP = cursor.fetchall()
     for row in rawP:
         addr = buildAddr(row[2], row[3], row[4], row[5])
+        tstamp = time.strftime("%d %b %Y at %H:%M:S", row[1])
         passages.append([row[0], row[1], addr, row[6], row[7], row[8], row[9]])
     return stats, passages, time.time()
 
