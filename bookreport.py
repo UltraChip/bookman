@@ -26,9 +26,9 @@ def main(viewMode):
         vString = "LLM Only" if viewMode == 1 else "All Entries"
 
         clearScreen()
-        print(colSpacer(["BOOKMAN REPORTING UTILITY"], "="))
+        print(colSpacer(["","BOOKMAN REPORTING UTILITY",""], "="))
         line = [f"View Mode: {vString}",
-                f"DB Loaded On: {time.strftime("%d %b %Y at %H:%M%S", time.localtime(loadtime))}"]
+                f"DB Loaded On: {time.strftime("%d %b %Y at %H:%M:%S", time.localtime(loadtime))}"]
         print(colSpacer(line))
         line = [f"Books Read: {stats[0]:,}",
                 f"Avg Speed: {stats[1]:.2f} seconds per book"]
@@ -144,8 +144,8 @@ def loadDB():
     rawP = cursor.fetchall()
     for row in rawP:
         addr = buildAddr(row[2], row[3], row[4], row[5])
-        tstamp = time.strftime("%d %b %Y at %H:%M:S", row[1])
-        passages.append([row[0], row[1], addr, row[6], row[7], row[8], row[9]])
+        tstamp = time.strftime("%d %b %Y at %H:%M:%S", time.gmtime(float(row[1])))
+        passages.append([row[0], tstamp, addr, row[6], row[7], row[8], row[9]])
     return stats, passages, time.time()
 
 def buildAddr(hex, wall, shelf, volume):
