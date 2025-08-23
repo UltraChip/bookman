@@ -81,7 +81,6 @@ def analyze(book, hex, wall, shelf, volume, db, dictionary):
         if (page*3200) < i:
             page = ceil(i/3200)
 
-        print(page)
         wc = wCount(segment, dictionary)
         if wc >= conf['wordCount']:
             tstamp = time.time()
