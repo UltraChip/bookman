@@ -44,8 +44,10 @@ def scanHex(wid, hbeats):
                     tryAgain = True
                     while tryAgain:
                         try:
-                            book = pybel.browse(hex, str(wall), str(shelf), str(volume)).replace("\n", "")
-                            #book = testbook()  # NOTE: Only uncomment this line when testing!
+                            if conf['testmode'] == 0:
+                                book = pybel.browse(hex, str(wall), str(shelf), str(volume)).replace("\n", "")
+                            else:
+                                book = testbook()  # NOTE: Only uncomment this line when testing!
                             logging.debug(f"READER #{wid} - Book downloaded. Reading...")
                             tryAgain = False
                         except:
@@ -78,7 +80,8 @@ def analyze(book, hex, wall, shelf, volume, db, dictionary):
 
         if (page*3200) < i:
             page = ceil(i/3200)
-        
+
+        print(page)
         wc = wCount(segment, dictionary)
         if wc >= conf['wordCount']:
             tstamp = time.time()
@@ -133,12 +136,14 @@ def wCount(segment, dictionary):
 def llmCheck(segment):
     # If a given segment is shown to have a high chance of containing language, then we pass it to
     # an Ollama server and ask it to perform a final confirmation. Returns 1 if the LLM believes
-    # there is language, otherwise returns 0. 
+    # there is language, otherwise returns 0.
+    print(segment)
     while True:
         thePrompt = f"{conf['llmPrompt']}\n\nThe test string is:\n{segment}"
         client = ollama.Client(host=conf['llmHost'])
         answer = client.generate(model=conf['llmModel'], prompt=thePrompt)
         yesno = answer['response'].strip()
+        print(yesno)
         if yesno == '1':
             return 1
         elif yesno == '0':
@@ -222,7 +227,10 @@ initDB(conf['dbfile'])
 manager = mp.Manager()
 workers = []
 hbeats  = manager.dict()
-cCount = os.cpu_count() if conf['cCount'] == 0 else conf['cCount']
+if conf['testmode'] == 1:
+    cCount = 1
+else:
+    cCount = os.cpu_count() if conf['cCount'] == 0 else conf['cCount']
 mp.get_context("spawn")
 for w in range(cCount):
     worker = mp.Process(target=scanHex, args=(w, hbeats))

@@ -50,6 +50,7 @@ def main(viewMode):
         print(f"{div()}\n")
         line = ["M - Toggle View Mode",
                 "D - Delete Entry",
+                "R - Refresh",
                 "Q - Quit"]
         print("Enter index # to view get URL or...")
         print(colSpacer(line))
@@ -59,6 +60,8 @@ def main(viewMode):
             viewMode = 1 if viewMode == 0 else 0
         elif choice.upper() == "D":
             deleteEntry()
+        elif choice.upper() == "R":
+            stats, passages, loadtime = loadDB()
         elif choice.upper() == "Q":
             return
         else:
