@@ -142,7 +142,6 @@ def llmCheck(segment):
         client = ollama.Client(host=conf['llmHost'])
         answer = client.generate(model=conf['llmModel'], prompt=thePrompt)
         yesno = answer['response'].strip()
-        print(yesno)
         if yesno == '1':
             return 1
         elif yesno == '0':
