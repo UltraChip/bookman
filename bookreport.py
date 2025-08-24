@@ -17,29 +17,34 @@ confFile = "./bookman.conf"
 
 
 # FUNCTIONS
-
-def main(viewMode):
+def main(viewMode, tz):
     # Main menu function
+    stats, passages, loadtime = loadDB()
     while True:
         choice = "NOCHOICE"
-        stats, passages, loadtime = loadDB()
         vString = "LLM Only" if viewMode == 1 else "All Entries"
+        tString = "UTC" if tz == 'utc' else "Local"
 
         clearScreen()
         print(colSpacer(["","BOOKMAN REPORTING UTILITY",""], "="))
-        line = [f"View Mode: {vString}",
+        line = [f"Books Read: {stats[0]:,}",
                 f"DB Loaded On: {time.strftime('%d %b %Y at %H:%M:%S', time.localtime(loadtime))}"]
         print(colSpacer(line))
-        line = [f"Books Read: {stats[0]:,}",
-                f"Avg Speed: {stats[1]:.2f} seconds per book"]
+        line = [f"Avg Speed:  {stats[1]:.2f} seconds per book",
+                f"View Mode:  {vString}"]
         print(colSpacer(line))
-        print(f"{div()}\n")
+        print(f"Time Zone:  {tString}")
+        print(f"{div()}")
         tHeaders = ["Index", "Time Found", "Address", "Page", "Content", "Score"]
         if viewMode == 0:
             tHeaders.append("LLM")
         table = pt(tHeaders)
         for p in passages:
-            tEntry = [p[0], p[1], p[2], p[3], p[4], p[5]]
+            if tz == "utc":
+                tstamp = time.strftime("%d %b %Y at %H:%M:%S", time.gmtime(float(p[1])))
+            else:
+                tstamp = time.strftime("%d %b %Y at %H:%M:%S", time.localtime(float(p[1])))
+            tEntry = [p[0], tstamp, p[2], p[3], p[4], p[5]]
             if viewMode == 0:
                 tEntry.append(p[6])
                 table.add_row(tEntry)
@@ -50,6 +55,7 @@ def main(viewMode):
         print(f"{div()}\n")
         line = ["M - Toggle View Mode",
                 "D - Delete Entry",
+                "T - Change Timezone",
                 "R - Refresh",
                 "Q - Quit"]
         print("Enter index # to view get URL or...")
@@ -60,6 +66,8 @@ def main(viewMode):
             viewMode = 1 if viewMode == 0 else 0
         elif choice.upper() == "D":
             deleteEntry()
+        elif choice.upper() == "T":
+            tz = 'utc' if tz == 'local' else 'local'
         elif choice.upper() == "R":
             stats, passages, loadtime = loadDB()
         elif choice.upper() == "Q":
@@ -147,8 +155,7 @@ def loadDB():
     rawP = cursor.fetchall()
     for row in rawP:
         addr = buildAddr(row[2], row[3], row[4], row[5])
-        tstamp = time.strftime("%d %b %Y at %H:%M:%S", time.gmtime(float(row[1])))
-        passages.append([row[0], tstamp, addr, row[6], row[7], row[8], row[9]])
+        passages.append([row[0], row[1], addr, row[6], row[7], row[8], row[9]])
     return stats, passages, time.time()
 
 def buildAddr(hex, wall, shelf, volume):
@@ -170,4 +177,4 @@ def getWidth():
 conf     = loadConfig(confFile)
 swidth   = getWidth()
 
-main(conf['viewmode'])
+main(conf['viewmode'], conf['tz'])

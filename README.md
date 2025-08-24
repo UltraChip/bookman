@@ -53,6 +53,10 @@ Below is an explanation of each of the config file options:
 
 - viewmode : The default viewing mode for the Book Report utility. 1 means view is LLM-verified entries only, while 0 means view all entries. Default is 1.
 
+- tz : The default time zone to report time stamps in. The options are 'utc' and 'local'. Default is 'utc'.
+
+- testmode : Toggle BookMan's Test Mode on (1) or off (0). When Test Mode is active, the program will only load the included test book (instead of downloading real books from the Library), which includes five known-valid English phrases. Test Mode also locks the program in to a single thread so that you aren't spammed with repetitive findings. 
+
 
 ## How to View the Results
 In addition to scrolling log output on the screen (and also bookman.log), BookMan writes its findings to an SQLite3 database. Unfortunately, right now the only way to access the contents of that database is to open it up manually using sqlite's command line utility. I'm working on a proper tool for perusing the database but I haven't written it yet. 

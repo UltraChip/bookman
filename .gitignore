@@ -1,4 +1,5 @@
 __pychache__/*
+__pycachce__/.*
 *.db
 *.log
 *.code-workspace
