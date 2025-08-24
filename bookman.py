@@ -136,7 +136,6 @@ def llmCheck(segment):
     # If a given segment is shown to have a high chance of containing language, then we pass it to
     # an Ollama server and ask it to perform a final confirmation. Returns 1 if the LLM believes
     # there is language, otherwise returns 0.
-    print(segment)
     while True:
         thePrompt = f"{conf['llmPrompt']}\n\nThe test string is:\n{segment}"
         client = ollama.Client(host=conf['llmHost'])
