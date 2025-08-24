@@ -31,7 +31,7 @@ def main(viewMode, tz):
                 f"DB Loaded On: {time.strftime('%d %b %Y at %H:%M:%S', time.localtime(loadtime))}"]
         print(colSpacer(line))
         line = [f"Avg Speed:  {stats[1]:.2f} seconds per book",
-                f"View Mode:  {vString}"]
+                f"View Mode: {vString}"]
         print(colSpacer(line))
         print(f"Time Zone:  {tString}")
         print(f"{div()}")
@@ -66,6 +66,7 @@ def main(viewMode, tz):
             viewMode = 1 if viewMode == 0 else 0
         elif choice.upper() == "D":
             deleteEntry()
+            stats, passages, loadtime = loadDB()
         elif choice.upper() == "T":
             tz = 'utc' if tz == 'local' else 'local'
         elif choice.upper() == "R":
